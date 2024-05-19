@@ -22,17 +22,30 @@ type SearchEngine struct {
 	Index     map[string][]int
 }
 
+// NewSearchEngine creates a new SearchEngine instance and initializes it with the documents loaded from the specified path.
+// It returns a pointer to the newly created SearchEngine.
 func NewSearchEngine(path string) *SearchEngine {
 	s := &SearchEngine{
-		Index: make(map[string][]int),
+		Index: make(map[string][]int), // Initialize the Index map.
 	}
-	err := s.LoadDocuments(path)
+	err := s.LoadDocuments(path) // Load documents from the specified path.
 	if err != nil {
-		panic(err)
+		panic(err) // Panic if an error occurs while loading documents.
 	}
-	s.IndexDoc()
-	return s
+	s.IndexDoc() // Index the loaded documents.
+	return s     // Return the pointer to the newly created SearchEngine.
 }
+
+// LoadDocuments loads and processes the documents from the specified path.
+// It opens the file, creates a gzip reader, and decodes the XML data into a temporary slice of documents.
+// Then, it converts the temporary documents to actual documents and assigns IDs to them.
+// Parameters:
+//
+//	path: a string representing the path to the file containing the documents in gzip-compressed XML format.
+//
+// Return values:
+//
+//	error: an error if any occurred during the process, or nil if the operation was successful.
 func (s *SearchEngine) LoadDocuments(path string) error {
 	// Open the file
 	f, err := os.Open(path)
@@ -84,7 +97,7 @@ func (s *SearchEngine) LoadDocuments(path string) error {
 	return nil
 }
 
-// add adds documents to the Index.
+// IndexDoc indexes the documents in the SearchEngine by tokenizing and adding them to the Index map.
 func (s *SearchEngine) IndexDoc() {
 	for _, doc := range s.Documents {
 		for _, token := range analyze(doc.Text) {
@@ -99,6 +112,15 @@ func (s *SearchEngine) IndexDoc() {
 }
 
 // Intersection returns the intersection of two slices.
+// It takes two integer slices a and b as input and returns a new slice containing the common elements between the two input slices.
+// Parameters:
+//
+//	a: an integer slice representing the first input slice.
+//	b: an integer slice representing the second input slice.
+//
+// Return values:
+//
+//	[]int: a new slice containing the common elements between the input slices a and b.
 func Intersection(a []int, b []int) []int {
 	maxLen := len(a)
 	if len(b) > maxLen {
@@ -120,7 +142,15 @@ func Intersection(a []int, b []int) []int {
 	return r
 }
 
-// tokenize returns a slice of tokens.
+// tokenize returns a slice of tokens by splitting the input text based on non-letter and non-number characters.
+// It takes a string representing the input text and returns a slice of strings representing the tokens obtained after splitting the text.
+// Parameters:
+//
+//	text: a string representing the input text to be tokenized.
+//
+// Return values:
+//
+//	[]string: a slice of strings representing the tokens obtained after splitting the input text.
 func tokenize(text string) []string {
 	return strings.FieldsFunc(text, func(r rune) bool {
 		// Split on any character that is not a letter or a number.
@@ -128,15 +158,32 @@ func tokenize(text string) []string {
 	})
 }
 
-// analyze returns a slice of tokens.
+// analyze returns a slice of tokens after processing the input text through tokenization, lowercase filtering, stop word filtering, and stemming.
+// It takes a string representing the input text and returns a slice of strings representing the processed tokens.
+// Parameters:
+//
+//	text: a string representing the input text to be analyzed.
+//
+// Return values:
+//
+//	[]string: a slice of strings representing the processed tokens obtained after tokenization, lowercase filtering, stop word filtering, and stemming.
 func analyze(text string) []string {
-	tokens := tokenize(text)
-	tokens = lowercaseFilter(tokens)
-	tokens = stopWordFilter(tokens)
-	tokens = stemmerFilter(tokens)
-	return tokens
+	tokens := tokenize(text)         // Tokenize the input text.
+	tokens = lowercaseFilter(tokens) // Apply lowercase filtering to the tokens.
+	tokens = stopWordFilter(tokens)  // Apply stop word filtering to the tokens.
+	tokens = stemmerFilter(tokens)   // Apply stemming to the tokens.
+	return tokens                    // Return the processed tokens.
 }
 
+// lowercaseFilter applies lowercase filtering to the input tokens and returns a new slice of strings with all tokens converted to lowercase.
+// It takes a slice of strings representing the input tokens and returns a new slice of strings with all tokens converted to lowercase.
+// Parameters:
+//
+//	tokens: a slice of strings representing the input tokens to be converted to lowercase.
+//
+// Return values:
+//
+//	[]string: a new slice of strings containing the input tokens converted to lowercase.
 func lowercaseFilter(tokens []string) []string {
 	r := make([]string, len(tokens))
 	for i, token := range tokens {
@@ -146,6 +193,13 @@ func lowercaseFilter(tokens []string) []string {
 }
 
 // stopWordFilter returns a slice of tokens with stop words removed.
+// It takes a slice of strings representing the input tokens and removes any stop words from the input.
+// Stop words are common words that are often filtered out from text data because they do not carry significant meaning or are too common to be useful for searching or indexing.
+// Parameters:
+//   tokens: a slice of strings representing the input tokens from which stop words are to be removed.
+// Return values:
+//   []string: a new slice of strings containing the input tokens with stop words removed.
+
 func stopWordFilter(tokens []string) []string {
 	stopWords := map[string]struct{}{
 		"a": {}, "about": {}, "above": {}, "after": {}, "again": {},
@@ -187,6 +241,7 @@ func stopWordFilter(tokens []string) []string {
 
 	var filteredTokens []string
 	for _, token := range tokens {
+		// Check if the token is not a stop word
 		if _, ok := stopWords[token]; !ok {
 			filteredTokens = append(filteredTokens, token)
 		}
@@ -194,11 +249,20 @@ func stopWordFilter(tokens []string) []string {
 	return filteredTokens
 }
 
-// stemmerFilter returns a slice of stemmed tokens.
+// stemmerFilter returns a slice of stemmed tokens after applying the Snowball stemming algorithm.
+// It takes a slice of strings representing the input tokens and returns a new slice of strings containing the stemmed tokens.
+// Snowball stemming algorithm is used to reduce words to their root form, which helps in improving search and indexing capabilities by treating different forms of the same word as equivalent.
+// Parameters:
+//
+//	tokens: a slice of strings representing the input tokens to be stemmed.
+//
+// Return values:
+//
+//	[]string: a new slice of strings containing the stemmed tokens obtained after applying the Snowball stemming algorithm to the input tokens.
 func stemmerFilter(tokens []string) []string {
 	r := make([]string, len(tokens))
 	for i, token := range tokens {
-		r[i] = snowballeng.Stem(token, false)
+		r[i] = snowballeng.Stem(token, false) // Apply Snowball stemming algorithm to the token.
 	}
 	return r
 }

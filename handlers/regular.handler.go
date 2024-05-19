@@ -5,6 +5,9 @@ import (
 	"sort"
 )
 
+// Search performs a search operation based on the given text and returns a ranked list of document IDs.
+// It tokenizes the search query, calculates TF-IDF scores for documents, and ranks the documents based on the scores.
+// If the search query is empty or no matching documents are found, it returns an empty list.
 func (s *SearchEngine) Search(text string) []int {
 	// Tokenize the search query
 	queryTokens := analyze(text)
@@ -72,6 +75,16 @@ func (s *SearchEngine) Search(text string) []int {
 	return rankedDocs
 }
 
+// calculateTF calculates the term frequency (TF) of a given term in the document text.
+// It counts the occurrences of the term in the document text and divides it by the total number of tokens in the text to obtain the TF value.
+// Parameters:
+//
+//	term: the term for which the TF is calculated
+//	documentText: the text of the document in which the term frequency is calculated
+//
+// Return:
+//
+//	float64: the term frequency (TF) of the given term in the document text
 func calculateTF(term string, documentText string) float64 {
 	tokens := analyze(documentText)
 	termCount := 0
