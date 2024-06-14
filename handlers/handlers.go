@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"encoding/xml"
 	"os"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -167,12 +168,16 @@ func tokenize(text string) []string {
 // Return values:
 //
 //	[]string: a slice of strings representing the processed tokens obtained after tokenization, lowercase filtering, stop word filtering, and stemming.
+//
+// analyze processes the input text by tokenizing, converting to lowercase, removing stop words, and stemming
 func analyze(text string) []string {
-	tokens := tokenize(text)         // Tokenize the input text.
-	tokens = lowercaseFilter(tokens) // Apply lowercase filtering to the tokens.
-	tokens = stopWordFilter(tokens)  // Apply stop word filtering to the tokens.
-	tokens = stemmerFilter(tokens)   // Apply stemming to the tokens.
-	return tokens                    // Return the processed tokens.
+	tokens := tokenize(text)                // Tokenize the input text.
+	tokens = lowercaseFilter(tokens)        // Apply lowercase filtering to the tokens.
+	tokens = removeNonEnglishFilter(tokens) // Remove non-English characters, numbers, and symbols.
+	tokens = stopWordFilter(tokens)         // Apply stop word filtering to the tokens.
+	tokens = stemmerFilter(tokens)          // Apply stemming to the tokens.
+
+	return tokens // Return the processed tokens.
 }
 
 // lowercaseFilter applies lowercase filtering to the input tokens and returns a new slice of strings with all tokens converted to lowercase.
@@ -265,4 +270,21 @@ func stemmerFilter(tokens []string) []string {
 		r[i] = snowballeng.Stem(token, false) // Apply Snowball stemming algorithm to the token.
 	}
 	return r
+}
+
+func removeNonEnglishChars(word string) string {
+	re := regexp.MustCompile("[^a-zA-Z]+")
+	return re.ReplaceAllString(word, "")
+}
+
+// removeNonEnglishFilter applies the removeNonEnglishChars function to a slice of tokens
+func removeNonEnglishFilter(tokens []string) []string {
+	cleanedTokens := []string{}
+	for _, token := range tokens {
+		cleanedToken := removeNonEnglishChars(token)
+		if cleanedToken != "" {
+			cleanedTokens = append(cleanedTokens, cleanedToken)
+		}
+	}
+	return cleanedTokens
 }
