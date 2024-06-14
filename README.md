@@ -36,14 +36,14 @@ This command will clean up your `go.mod` file and download the necessary depende
 Build the application using the following command:
 
 ```bash
-go build -o wikidump_searchengine
+go build
 ```
 
 ### Run the Application
 Run the application with the following command:
 
 ```bash
-./wikidump_searchengine -file <enwiki-latest-abstract.xml.gz>
+./appName -file <enwiki-latest-abstract.xml.gz>
 ```
 
 ## Libraries Used
